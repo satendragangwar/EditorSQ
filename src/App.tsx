@@ -175,7 +175,7 @@ function App() {
         <div className="nav-content">
           <div className="nav-logo">
             <Database size={24} />
-            <span>SQL Query Executor</span>
+            <span>Atlan Online SQL Query Executor</span>
           </div>
           <div className="nav-links">
             <button className="nav-button" onClick={() => setShowSuggestions(!showSuggestions)}>
@@ -193,7 +193,7 @@ function App() {
               <button className="close-button" onClick={closeWelcome}>
                 <X size={20} />
               </button>
-              <h2>Welcome to SQL Query Executor!</h2>
+              <h2>Welcome to Atlan SQL Query Executor!</h2>
               <p>This tool helps you execute SQL queries on customer data. Here are some features:</p>
               <ul>
                 <li>Execute SQL queries on sample customer data</li>
