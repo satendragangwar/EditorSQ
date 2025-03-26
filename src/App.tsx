@@ -81,41 +81,63 @@ function App() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filterValue, setFilterValue] = useState('');
 
-  useEffect(() => {
-     setShowWelcome(true)
-  }, []);
+   
 
   const closeWelcome = () => {
     setShowWelcome(false);
   };
+
+  useEffect(() => {
+    setShowWelcome(true);  // Show welcome message
+    setShowSuggestions(false); // Close Help section
+    setQuery(''); // Clear SQL query
+  }, []);
+  
 
   const executeQuery = useCallback(() => {
     if (!query.trim()) {
       setError('Please enter a query');
       return;
     }
-
+  
     setLoading(true);
     setError(null);
-
+  
     setTimeout(() => {
       try {
         let filteredData = [...sampleData];
-        
+  
+        // Extract SELECT and WHERE parts
         const lowerQuery = query.toLowerCase();
-        if (lowerQuery.includes('where')) {
-          const whereCondition = query.toLowerCase().split('where')[1].trim();
-          if (whereCondition.includes('country =')) {
-            const country = whereCondition.split('=')[1].trim().replace(/'/g, '');
-            filteredData = sampleData.filter(item => item.country === country);
+        let selectedColumns: string[] = [];
+        let whereCondition: string | null = null;
+  
+        if (lowerQuery.includes('select') && lowerQuery.includes('from')) {
+          const selectPart = query.match(/select\s+(.+?)\s+from/i)?.[1]?.trim();
+
+          selectedColumns = selectPart === '*' ? Object.keys(sampleData[0]) : selectPart.split(',').map(col => col.trim());
+  
+          if (lowerQuery.includes('where')) {
+            whereCondition = query.split('where')[1].trim();
+            if (whereCondition.includes('country =')) {
+              const country = whereCondition.split('=')[1].trim().replace(/'/g, '');
+              filteredData = sampleData.filter(item => item.country === country);
+            }
           }
+        } else {
+          throw new Error('Invalid SQL Query');
         }
-
+  
+        // Filter data to include only selected columns
+        const resultRows = filteredData.map(row =>
+          Object.fromEntries(selectedColumns.map(col => [col, row[col]]))
+        );
+  
         const result: QueryResult = {
-          columns: Object.keys(sampleData[0]),
-          rows: filteredData
+          columns: selectedColumns,
+          rows: resultRows
         };
-
+  
         setResults(result);
         setHistory(prev => [...prev, { query, timestamp: new Date() }]);
         setLoading(false);
@@ -125,6 +147,7 @@ function App() {
       }
     }, 1000);
   }, [query]);
+  
 
   const exportResults = useCallback((format: 'csv' | 'json') => {
     if (!results) return;
