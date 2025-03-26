@@ -50,6 +50,7 @@ Follow these instructions to run the project locally.
 ## Demo
 
 Check out the live demo [https://editor-sq.vercel.app/](https://editor-sq.vercel.app/).
+<img width="1435" alt="Image" src="https://github.com/user-attachments/assets/d0bf8a83-a5e0-4ac9-a924-8a380a549584" />
 
 
 
