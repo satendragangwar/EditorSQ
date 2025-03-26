@@ -49,16 +49,7 @@ Follow these instructions to run the project locally.
 
 ## Demo
 
-Check out the live demo [here](https://editor-sq.vercel.app/).
+Check out the live demo [https://editor-sq.vercel.app/](https://editor-sq.vercel.app/).
 
-## Screenshot
 
-![Project Screenshot](https://ibb.co/RrSyYf9)
 
-## Contributing
-
-We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for more information.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
