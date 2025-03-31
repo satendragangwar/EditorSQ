@@ -95,8 +95,8 @@ function App() {
   
 
   const executeQuery = useCallback(() => {
-    if (!query.trim()) {
-      setError('Please enter a query');
+    if (!query || !query.trim()) { // Check if query is undefined or empty
+      setError('Please enter a valid SQL query.');
       return;
     }
   
@@ -105,37 +105,56 @@ function App() {
   
     setTimeout(() => {
       try {
+        if (!sampleData || sampleData.length === 0) {
+          throw new Error('No customer data available.');
+        }
+  
         let filteredData = [...sampleData];
   
-        // Extract SELECT and WHERE parts
         const lowerQuery = query.toLowerCase();
         let selectedColumns: string[] = [];
         let whereCondition: string | null = null;
   
         if (lowerQuery.includes('select') && lowerQuery.includes('from')) {
-          const selectPart = query.match(/select\s+(.+?)\s+from/i)?.[1]?.trim();
-
-          selectedColumns = selectPart === '*' ? Object.keys(sampleData[0]) : selectPart.split(',').map(col => col.trim());
+          const selectMatch = query.match(/select\s+(.+?)\s+from/i);
+          if (!selectMatch || !selectMatch[1]) {
+            throw new Error('Invalid SQL syntax: Missing columns in SELECT statement.');
+          }
   
+          const selectPart = selectMatch[1].trim();
+          selectedColumns =
+            selectPart === '*' ? Object.keys(sampleData[0]) : selectPart.split(',').map(col => col.trim());
+  
+          // Handle WHERE clause
           if (lowerQuery.includes('where')) {
-            whereCondition = query.split('where')[1].trim();
-            if (whereCondition.includes('country =')) {
-              const country = whereCondition.split('=')[1].trim().replace(/'/g, '');
-              filteredData = sampleData.filter(item => item.country === country);
+            const whereMatch = query.match(/where\s+(.+)/i);
+            if (whereMatch && whereMatch[1]) {
+              whereCondition = whereMatch[1].trim();
+  
+              // Support `country = 'Germany'`
+              const countryMatch = whereCondition.match(/country\s*=\s*'([^']+)'/i);
+              if (countryMatch && countryMatch[1]) {
+                const countryValue = countryMatch[1];
+                filteredData = sampleData.filter(item => item.country.toLowerCase() === countryValue.toLowerCase());
+              }
             }
           }
         } else {
-          throw new Error('Invalid SQL Query');
+          throw new Error('Invalid SQL Query format.');
+        }
+  
+        if (filteredData.length === 0) {
+          throw new Error('No matching records found.');
         }
   
         // Filter data to include only selected columns
         const resultRows = filteredData.map(row =>
-          Object.fromEntries(selectedColumns.map(col => [col, row[col]]))
+          Object.fromEntries(selectedColumns.map(col => [col, row[col] || '']))
         );
   
         const result: QueryResult = {
           columns: selectedColumns,
-          rows: resultRows
+          rows: resultRows,
         };
   
         setResults(result);
@@ -146,7 +165,7 @@ function App() {
         setLoading(false);
       }
     }, 1000);
-  }, [query]);
+  }, [query, sampleData]);
   
 
   const exportResults = useCallback((format: 'csv' | 'json') => {
